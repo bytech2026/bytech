@@ -20,8 +20,9 @@ function formatProduct(p: typeof productsTable.$inferSelect & { categoryName?: s
     ...p,
     price: parseFloat(p.price as unknown as string),
     salePrice: p.salePrice ? parseFloat(p.salePrice as unknown as string) : null,
-    colors: parseArr(p.colors),
-    storageOptions: parseArr(p.storageOptions),
+    colors: parseArr<string>(p.colors),
+    storageOptions: parseArr<string>(p.storageOptions),
+    variantStock: parseArr<{ color: string; storage: string; quantity: number }>(p.variantStock),
     createdAt: p.createdAt.toISOString(),
   };
 }
