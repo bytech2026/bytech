@@ -25,6 +25,7 @@ export const productsTable = pgTable("products", {
   featured: boolean("featured").notNull().default(false),
   colors: text("colors"),
   storageOptions: text("storage_options"),
+  variantStock: text("variant_stock"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
