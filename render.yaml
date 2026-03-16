@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: bytech-api
+    runtime: node
+    rootDir: .
+    buildCommand: corepack enable && pnpm install && pnpm --filter @workspace/api-server build
+    startCommand: node artifacts/api-server/dist/index.cjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false

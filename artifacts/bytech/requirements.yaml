@@ -1,0 +1,19 @@
+packages:
+  "zustand": "Client-side state management for the shopping cart"
+  "framer-motion": "Smooth page transitions and micro-interactions for premium feel"
+  "react-hook-form": "Form state management"
+  "@hookform/resolvers": "Zod validation resolver for forms"
+  "date-fns": "Formatting dates in the owner dashboard"
+
+images:
+  - path: "artifacts/bytech/public/images/hero-bg.png"
+    description: "Dark aesthetic abstract technology background with glowing electric blue geometric lines and subtle grid patterns"
+    aspect_ratio: "16:9"
+  - path: "artifacts/bytech/public/images/sale-banner.png"
+    description: "Cyberpunk style promotional banner background with neon cyan accents on dark gray metal texture"
+    aspect_ratio: "21:9"
+
+notes:
+  - Using generated API hooks from @workspace/api-client-react
+  - Cart state is managed entirely client-side using Zustand
+  - Auth relies on the existing /api/auth/me cookie session mechanism
