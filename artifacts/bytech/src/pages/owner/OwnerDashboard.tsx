@@ -77,8 +77,19 @@ export function OwnerDashboard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const emptyProd = { name: "", description: "", price: 0, salePrice: "", stock: 0, categoryId: 0, imageUrl: "", featured: false, colors: [] as string[], storageOptions: [] as string[] };
-  const [prodForm, setProdForm] = useState(emptyProd);
+  const emptyProd = {
+  name: "",
+  description: "",
+  price: 0,
+  salePrice: "",
+  stock: 0,
+  categoryId: 0,
+  imageUrl: "",
+  featured: false,
+  colors: [] as string[],
+  storageOptions: [] as string[],
+  variantStock: [] as { color: string; storage: string; quantity: number }[],
+};  const [prodForm, setProdForm] = useState(emptyProd);
   const [catForm, setCatForm] = useState({ name: "", description: "" });
   const [saleForm, setSaleForm] = useState({ title: "", description: "", discountPercent: 10, startDate: new Date().toISOString().split("T")[0], endDate: new Date().toISOString().split("T")[0] });
 
