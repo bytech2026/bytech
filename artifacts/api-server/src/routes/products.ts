@@ -5,9 +5,9 @@ import { eq, ilike, and, isNotNull } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-function parseArr(val: string | null | undefined): string[] {
+function parseArr<T = unknown>(val: string | null | undefined): T[] {
   if (!val) return [];
-  try { return JSON.parse(val); } catch { return []; }
+  try { return JSON.parse(val) as T[]; } catch { return []; }
 }
 
 function stringifyArr(val: unknown): string | null {
