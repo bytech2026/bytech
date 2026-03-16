@@ -6,9 +6,6 @@ import { rm, readFile } from "fs/promises";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// server deps to bundle to reduce openat(2) syscalls
-// which helps cold start times without risking some
-// packages that are not bundle compatible
 const allowlist = [
   "@google/generative-ai",
   "axios",
@@ -58,8 +55,8 @@ async function buildAll() {
     entryPoints: [path.resolve(__dirname, "src/index.ts")],
     platform: "node",
     bundle: true,
-    format: "cjs",
-    outfile: path.resolve(distDir, "index.cjs"),
+    format: "esm",
+    outfile: path.resolve(distDir, "index.js"),
     define: {
       "process.env.NODE_ENV": '"production"',
     },
