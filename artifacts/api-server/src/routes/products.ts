@@ -7,7 +7,11 @@ const router: IRouter = Router();
 
 function parseArr<T = unknown>(val: string | null | undefined): T[] {
   if (!val) return [];
-  try { return JSON.parse(val) as T[]; } catch { return []; }
+  try {
+    return JSON.parse(val) as T[];
+  } catch {
+    return [];
+  }
 }
 
 function stringifyArr(val: unknown): string | null {
@@ -15,14 +19,18 @@ function stringifyArr(val: unknown): string | null {
   return JSON.stringify(val);
 }
 
-function formatProduct(p: typeof productsTable.$inferSelect & { categoryName?: string | null }) {
+function formatProduct(
+  p: typeof productsTable.$inferSelect & { categoryName?: string | null },
+) {
   return {
     ...p,
     price: parseFloat(p.price as unknown as string),
     salePrice: p.salePrice ? parseFloat(p.salePrice as unknown as string) : null,
     colors: parseArr<string>(p.colors),
     storageOptions: parseArr<string>(p.storageOptions),
-    variantStock: parseArr<{ color: string; storage: string; quantity: number }>(p.variantStock),
+    variantStock: parseArr<{ color: string; storage: string; quantity: number }>(
+      p.variantStock,
+    ),
     createdAt: p.createdAt.toISOString(),
   };
 }
@@ -31,6 +39,7 @@ router.get("/", async (req, res) => {
   try {
     const { categoryId, search, onSale } = req.query;
     const conditions = [];
+
     if (categoryId) conditions.push(eq(productsTable.categoryId, Number(categoryId)));
     if (search) conditions.push(ilike(productsTable.name, `%${search}%`));
     if (onSale === "true") conditions.push(isNotNull(productsTable.salePrice));
@@ -49,6 +58,7 @@ router.get("/", async (req, res) => {
         featured: productsTable.featured,
         colors: productsTable.colors,
         storageOptions: productsTable.storageOptions,
+        variantStock: productsTable.variantStock,
         createdAt: productsTable.createdAt,
       })
       .from(productsTable)
@@ -64,7 +74,20 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { name, description, price, salePrice, stock, imageUrl, categoryId, featured, colors, storageOptions } = req.body;
+    const {
+      name,
+      description,
+      price,
+      salePrice,
+      stock,
+      imageUrl,
+      categoryId,
+      featured,
+      colors,
+      storageOptions,
+      variantStock,
+    } = req.body;
+
     const [product] = await db
       .insert(productsTable)
       .values({
@@ -78,14 +101,21 @@ router.post("/", async (req, res) => {
         featured: featured ?? false,
         colors: stringifyArr(colors),
         storageOptions: stringifyArr(storageOptions),
+        variantStock: stringifyArr(variantStock),
       })
       .returning();
 
     const category = product.categoryId
-      ? await db.select().from(categoriesTable).where(eq(categoriesTable.id, product.categoryId)).limit(1)
+      ? await db
+          .select()
+          .from(categoriesTable)
+          .where(eq(categoriesTable.id, product.categoryId))
+          .limit(1)
       : [];
 
-    res.status(201).json({ ...formatProduct(product), categoryName: category[0]?.name ?? null });
+    res
+      .status(201)
+      .json({ ...formatProduct(product), categoryName: category[0]?.name ?? null });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create product" });
@@ -95,6 +125,7 @@ router.post("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+
     const products = await db
       .select({
         id: productsTable.id,
@@ -109,6 +140,7 @@ router.get("/:id", async (req, res) => {
         featured: productsTable.featured,
         colors: productsTable.colors,
         storageOptions: productsTable.storageOptions,
+        variantStock: productsTable.variantStock,
         createdAt: productsTable.createdAt,
       })
       .from(productsTable)
@@ -116,7 +148,10 @@ router.get("/:id", async (req, res) => {
       .where(eq(productsTable.id, id))
       .limit(1);
 
-    if (!products.length) return res.status(404).json({ error: "Product not found" });
+    if (!products.length) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
     res.json(formatProduct(products[0]));
   } catch (err) {
     console.error(err);
@@ -127,19 +162,39 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { name, description, price, salePrice, stock, imageUrl, categoryId, featured, colors, storageOptions } = req.body;
+    const {
+      name,
+      description,
+      price,
+      salePrice,
+      stock,
+      imageUrl,
+      categoryId,
+      featured,
+      colors,
+      storageOptions,
+      variantStock,
+    } = req.body;
 
     const updateData: Record<string, unknown> = {};
+
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = String(price);
-    if (salePrice !== undefined) updateData.salePrice = salePrice != null ? String(salePrice) : null;
+    if (salePrice !== undefined) {
+      updateData.salePrice = salePrice != null ? String(salePrice) : null;
+    }
     if (stock !== undefined) updateData.stock = stock;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
     if (featured !== undefined) updateData.featured = featured;
     if (colors !== undefined) updateData.colors = stringifyArr(colors);
-    if (storageOptions !== undefined) updateData.storageOptions = stringifyArr(storageOptions);
+    if (storageOptions !== undefined) {
+      updateData.storageOptions = stringifyArr(storageOptions);
+    }
+    if (variantStock !== undefined) {
+      updateData.variantStock = stringifyArr(variantStock);
+    }
 
     const [product] = await db
       .update(productsTable)
@@ -147,10 +202,16 @@ router.put("/:id", async (req, res) => {
       .where(eq(productsTable.id, id))
       .returning();
 
-    if (!product) return res.status(404).json({ error: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
 
     const category = product.categoryId
-      ? await db.select().from(categoriesTable).where(eq(categoriesTable.id, product.categoryId)).limit(1)
+      ? await db
+          .select()
+          .from(categoriesTable)
+          .where(eq(categoriesTable.id, product.categoryId))
+          .limit(1)
       : [];
 
     res.json({ ...formatProduct(product), categoryName: category[0]?.name ?? null });
